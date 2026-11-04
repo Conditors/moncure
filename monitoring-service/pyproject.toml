@@ -1,0 +1,14 @@
+[project]
+name = "monitoring-service"
+version = "0.1.0"
+description = "Product catalog, monitoring, imports, and price history service"
+readme = "MONITORING.md"
+authors = [
+    { name = "katasaevvv", email = "filipenkov.mmm1@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
