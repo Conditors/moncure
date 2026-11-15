@@ -21,6 +21,7 @@ from monitoring_service.db.models.mixins import (
 if TYPE_CHECKING:
     from monitoring_service.db.models.competitor_offer import CompetitorOffer
     from monitoring_service.db.models.import_job import ImportJob
+    from monitoring_service.db.models.collection_batches import CollectionBatch
 
 class Product(
     UuidPrimaryKeyMixin,
@@ -51,6 +52,12 @@ class Product(
     import_jobs: Mapped[list["ImportJob"]] = relationship(
         "ImportJob",
         back_populates="target_product",
+        lazy="raise",
+    )
+
+    collection_batches: Mapped[list["CollectionBatch"]] = relationship(
+        "CollectionBatch",
+        back_populates="product",
         lazy="raise",
     )
 

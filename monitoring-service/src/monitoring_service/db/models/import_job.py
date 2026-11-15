@@ -7,7 +7,7 @@ from sqlalchemy import (
     String,
     Text, Uuid,
     Enum as SAEnum,
-    CheckConstraint, UniqueConstraint,
+    CheckConstraint,
     ForeignKeyConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB

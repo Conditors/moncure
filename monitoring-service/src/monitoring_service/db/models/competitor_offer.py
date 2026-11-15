@@ -23,6 +23,8 @@ from monitoring_service.db.models.mixins import (
 )
 
 if TYPE_CHECKING:
+    from monitoring_service.db.models.collection_jobs import CollectionJob
+    from monitoring_service.db.models.price_observations import PriceObservation
     from monitoring_service.db.models.products import Product
 
 class CompetitorAvailabilityStatus(StrEnum):
@@ -73,6 +75,18 @@ class CompetitorOffer(
         back_populates="competitor_offers",
         lazy="raise"
     )
+    collection_jobs: Mapped[list["CollectionJob"]] = relationship(
+        "CollectionJob",
+        back_populates="competitor_offer",
+        lazy="raise",
+        overlaps="batch,collection_jobs",
+    )
+    price_observations: Mapped[list["PriceObservation"]] = relationship(
+        "PriceObservation",
+        back_populates="competitor_offer",
+        lazy="raise",
+        overlaps="collection_job,price_observation",
+    )
 
     __table_args__ = (
         UniqueConstraint("organization_id", "id", name="uq_competitor_offers_organization_id_id"),
@@ -86,4 +100,8 @@ class CompetitorOffer(
         CheckConstraint("current_price > 0", name="ck_competitor_offers_price_positive"),
         CheckConstraint("current_price_version > 0", name="ck_competitor_offers_price_version"),
         CheckConstraint("article IS NULL OR source IS NOT NULL", name="ck_competitor_offers_article_source"),
+        CheckConstraint(
+            "octet_length(normalized_url) <= 2000",
+            name="ck_competitor_offers_normalized_url_length",
+        ),
     )
