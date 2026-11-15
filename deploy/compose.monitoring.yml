@@ -1,0 +1,40 @@
+x-monitoring-service: &monitoring-service
+  image: monitoring-service:local
+  build:
+    context: ../monitoring-service
+  env_file:
+    - ../monitoring-service/.env
+  environment:
+    MONITORING_POSTGRES_HOST: monitoring-db
+    MONITORING_POSTGRES_PORT: 5432
+  restart: unless-stopped
+
+
+services:
+  monitoring-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${MONITORING_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MONITORING_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${MONITORING_POSTGRES_DB}
+    ports:
+      - "5434:5432"
+    volumes:
+      - monitoring_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MONITORING_POSTGRES_USER} -d ${MONITORING_POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  monitoring-migrate:
+    <<: *monitoring-service
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    depends_on:
+      monitoring-db:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  monitoring_postgres_data:

@@ -1,6 +1,3 @@
 include:
-  - compose.infra.yaml
-  - compose.monitoring.yaml
-  - compose.pricing.yaml
-  - compose.collector.yaml
-  - compose.account.yaml
+  - path: compose.monitoring.yml
+    env_file: ../monitoring-service/.env
