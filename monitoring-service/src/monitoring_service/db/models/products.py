@@ -4,9 +4,13 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
-    Numeric, String,
-    Text, Uuid,
-    CheckConstraint, Index, UniqueConstraint,
+    CheckConstraint,
+    Index,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -34,6 +38,7 @@ class Product(
     organization_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    normalized_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     article: Mapped[str | None] = mapped_column(String(55), nullable=True)
     source: Mapped[str | None] = mapped_column(String(50), nullable=True)
     price: Mapped[Decimal] = mapped_column(Numeric(19, 4), nullable=False)
@@ -52,6 +57,13 @@ class Product(
     import_jobs: Mapped[list["ImportJob"]] = relationship(
         "ImportJob",
         back_populates="target_product",
+        foreign_keys="ImportJob.target_product_id",
+        lazy="raise",
+    )
+    created_by_import_jobs: Mapped[list["ImportJob"]] = relationship(
+        "ImportJob",
+        back_populates="created_product",
+        foreign_keys="ImportJob.created_product_id",
         lazy="raise",
     )
 
@@ -72,10 +84,25 @@ class Product(
             "article IS NULL OR source IS NOT NULL",
             name="ck_products_article_source",
         ),
+        CheckConstraint(
+            "(url IS NULL) = (normalized_url IS NULL)",
+            name="ck_products_url_normalized_url",
+        ),
+        CheckConstraint(
+            "normalized_url IS NULL OR octet_length(normalized_url) <= 2000",
+            name="ck_products_normalized_url_length",
+        ),
         Index(
             "idx_products_organization_created",
             "organization_id",
             "created_at",
             "id",
+        ),
+        Index(
+            "uq_products_organization_normalized_url",
+            "organization_id",
+            "normalized_url",
+            unique=True,
+            postgresql_where=text("normalized_url IS NOT NULL"),
         ),
     )
