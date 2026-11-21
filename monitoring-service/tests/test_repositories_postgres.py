@@ -1,16 +1,12 @@
 import asyncio
-import os
-from collections.abc import AsyncIterator
 from decimal import Decimal
 from uuid import UUID, uuid4
 
 import pytest
-import pytest_asyncio
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
-from monitoring_service.config import get_settings
 from monitoring_service.db.models import (
     ImportJob,
     ImportJobStatus,
@@ -24,21 +20,6 @@ from monitoring_service.db.repositories.rabbitmq_inbox import InboxRepository
 from tests.postgres_helpers import backend_pid, wait_for_blocker
 
 pytestmark = pytest.mark.asyncio
-
-
-@pytest_asyncio.fixture
-async def engine() -> AsyncIterator[AsyncEngine]:
-    database = os.getenv("MONITORING_TEST_POSTGRES_DB")
-    if not database:
-        pytest.skip("Set MONITORING_TEST_POSTGRES_DB to a migrated disposable database")
-    if not database.startswith("monitoring_test_"):
-        pytest.fail("The disposable database name must start with monitoring_test_")
-
-    engine = create_async_engine(get_settings().postgres_url.set(database=database))
-    try:
-        yield engine
-    finally:
-        await engine.dispose()
 
 
 def make_job(organization_id: UUID, url: str) -> ImportJob:
