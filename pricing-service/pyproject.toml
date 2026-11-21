@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Product economics and pricing recommendation service"
 readme = "PRICING.md"
 authors = [
-    { name = "katasaevvv", email = "filipenkov.mmm1@gmail.com" }
+    { name = "quantumlgm", email = "v209861@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
