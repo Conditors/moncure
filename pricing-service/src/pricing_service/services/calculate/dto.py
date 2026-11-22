@@ -9,6 +9,7 @@ class PricingStrategy(StrEnum):
     MATCH_COMPETITOR = "match_competitor"
     UNDERCUT_COMPETITOR = "undercut_competitor"
     MIN_MARGIN_ONLY = "min_margin_only"
+    MARKET_AVERAGE = "market_average"
 
 
 class PricingParameters(BaseModel):
@@ -21,7 +22,7 @@ class PricingParameters(BaseModel):
 
 
 class MarketSnapshot(BaseModel):
-    competitor_min_price: Decimal | None
+    competitor_prices: list[Decimal]
 
 
 class CalculationResult(BaseModel):
