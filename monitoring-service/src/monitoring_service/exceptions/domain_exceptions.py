@@ -7,10 +7,22 @@ class ProductUrlAlreadyExists(Exception):
     def __init__(
         self,
         product_id: UUID,
-    ):
+    ) -> None:
         self.product_id = product_id
 
         super().__init__("A product with this URL already exists.")
+
+
+class ProductNotFoundError(Exception):
+    def __init__(self, product_id: UUID) -> None:
+        self.product_id = product_id
+        super().__init__("Target product was not found.")
+
+
+class CompetitorUrlAlreadyExists(Exception):
+    def __init__(self, competitor_offer_id: UUID) -> None:
+        self.competitor_offer_id = competitor_offer_id
+        super().__init__("A competitor offer with this URL already exists.")
 
 
 class ImportJobNotFoundError(Exception):

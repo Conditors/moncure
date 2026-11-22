@@ -25,23 +25,8 @@ from monitoring_service.exceptions.domain_exceptions import (
     ImportTypeSupportedError,
     ProductUrlAlreadyExists,
 )
+from monitoring_service.services.import_dto import ImportJobDetails, ImportJobResult
 from monitoring_service.url_normalization import normalize_product_url
-
-
-@dataclass(frozen=True)
-class ImportJobResult:
-    job_id: UUID
-    status: ImportJobStatus
-
-
-@dataclass(frozen=True)
-class ImportJobDetails:
-    job_id: UUID
-    status: ImportJobStatus
-    draft_data: ImportDraftV1 | None = None
-    error_code: str | None = None
-    created_product_id: UUID | None = None
-
 
 _price_adapter = TypeAdapter[Decimal](Price)
 

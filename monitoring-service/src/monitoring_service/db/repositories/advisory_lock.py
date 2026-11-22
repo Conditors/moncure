@@ -9,6 +9,16 @@ class PostgresAdvisoryLock:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def _acquire(self, key_bytes: bytes) -> None:
+        digest = blake2b(key_bytes, digest_size=8).digest()
+        lock_key = int.from_bytes(digest, byteorder="big", signed=True)
+
+        statement = text(
+            "SELECT pg_advisory_xact_lock(:lock_key)"
+        ).bindparams(bindparam("lock_key", type_=BigInteger()))
+
+        await self._session.execute(statement, {"lock_key": lock_key})
+
     async def acquire_product_url(
         self,
         organization_id: UUID,
@@ -20,11 +30,20 @@ class PostgresAdvisoryLock:
             + normalized_url.encode("utf-8")
         )
 
-        digest = blake2b(key_bytes, digest_size=8).digest()
-        lock_key = int.from_bytes(digest, byteorder="big", signed=True)
+        await self._acquire(key_bytes)
 
-        statement = text(
-            "SELECT pg_advisory_xact_lock(:lock_key)"
-        ).bindparams(bindparam("lock_key", type_=BigInteger()))
-
-        await self._session.execute(statement, {"lock_key": lock_key})
+    async def acquire_competitor_offer_url(
+        self,
+        organization_id: UUID,
+        target_product_id: UUID,
+        normalized_url: str,
+    ) -> None:
+        key_bytes = (
+            b"monitoring:competitor-offer-url:v1\x00"
+            + organization_id.bytes
+            + target_product_id.bytes
+            + normalized_url.encode("utf-8")
+        )
+    
+    
+        await self._acquire(key_bytes)
