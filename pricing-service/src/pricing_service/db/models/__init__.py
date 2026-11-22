@@ -1,0 +1,5 @@
+from pricing_service.db.models.base import Base
+from pricing_service.db.models.pricing_recommendation import PricingRecommendation
+from pricing_service.db.models.pricing_settings import PricingSettings
+from pricing_service.db.models.pricing_settings_version import PricingSettingsVersion
+
