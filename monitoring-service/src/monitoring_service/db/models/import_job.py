@@ -159,4 +159,15 @@ class ImportJob(
                 "AND status IN ('pending', 'processing', 'ready_for_review')"
             ),
         ),
+        Index(
+            "uq_import_jobs_active_competitor_url",
+            "organization_id",
+            "target_product_id",
+            "normalized_url",
+            unique=True,
+            postgresql_where=text(
+                "job_type = 'competitor_offer_import' "
+                "AND status IN ('pending', 'processing', 'ready_for_review')"
+            ),
+        ),
     )
