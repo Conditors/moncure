@@ -9,7 +9,10 @@ from monitoring_service.url_normalization import normalize_product_url
 @pytest.mark.parametrize(
     ("url", "expected"),
     [
-        ("HTTPS://Shop.Example:443/item?x=2&x=1#reviews", "https://shop.example/item?x=2&x=1"),
+        (
+            "HTTPS://Shop.Example:443/item?x=2&x=1#reviews",
+            "https://shop.example/item?x=2&x=1",
+        ),
         ("http://Example.COM:80", "http://example.com/"),
         ("https://пример.рф:8443/Товар", "https://xn--e1afmkfd.xn--p1ai:8443/Товар"),
         ("https://[2001:0db8::1]:443", "https://[2001:db8::1]/"),
@@ -19,6 +22,17 @@ from monitoring_service.url_normalization import normalize_product_url
 )
 def test_normalize_product_url(url: str, expected: str) -> None:
     assert normalize_product_url(url) == expected
+
+
+def test_unicode_hostname_matches_its_ascii_form_without_merging_distinct_sites() -> (
+    None
+):
+    unicode_url = normalize_product_url("https://faß.de/product")
+    ascii_url = normalize_product_url("https://xn--fa-hia.de/product")
+    other_url = normalize_product_url("https://fass.de/product")
+
+    assert unicode_url == ascii_url == "https://xn--fa-hia.de/product"
+    assert other_url == "https://fass.de/product"
 
 
 @pytest.mark.parametrize(

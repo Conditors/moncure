@@ -1,5 +1,4 @@
-"""Сообщения между Monitoring Service и Collector."""
-
+from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 from uuid import UUID
@@ -7,6 +6,7 @@ from uuid import UUID
 from pydantic import (
     AwareDatetime,
     BaseModel,
+    BeforeValidator,
     ConfigDict,
     Field,
     StringConstraints,
@@ -22,9 +22,27 @@ Price = Annotated[Decimal, Field(gt=0, max_digits=19, decimal_places=4)]
 Currency = Annotated[str, StringConstraints(pattern=r"^[A-Z]{3}$")]
 
 
+def require_integer_version(value: object) -> object:
+    if type(value) is not int:
+        raise ValueError("contract_version must be a JSON integer")
+    return value
+
+
+def parse_timestamp(value: object) -> datetime:
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        return datetime.fromisoformat(value)
+    raise ValueError("timestamp must be an ISO 8601 string")
+
+
+ContractVersionV1 = Annotated[Literal[1], BeforeValidator(require_integer_version)]
+WireTimestamp = Annotated[AwareDatetime, BeforeValidator(parse_timestamp)]
+
 
 class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
 
 class ImportDraftV1(ContractModel):
     schema_version: Literal[1] = 1
@@ -33,6 +51,7 @@ class ImportDraftV1(ContractModel):
     currency: Currency
     article: str | None = Field(default=None, min_length=1, max_length=55)
     source: str | None = Field(default=None, min_length=1, max_length=50)
+
 
 class CollectionRequestedPayloadV1(ContractModel):
     job_id: UUID
@@ -49,8 +68,8 @@ class CollectionRequestedPayloadV1(ContractModel):
 
 class CollectionRequestedV1(CollectionRequestedPayloadV1):
     message_id: UUID
-    contract_version: Literal[1]
-    requested_at: AwareDatetime
+    contract_version: ContractVersionV1
+    requested_at: WireTimestamp
 
 
 class CollectionCompletedPayloadV1(ContractModel):
@@ -71,6 +90,8 @@ class CollectionCompletedPayloadV1(ContractModel):
     @field_validator("name", "article", "source", mode="before")
     @classmethod
     def strip_text(cls, value: object) -> object:
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Text must not contain NUL characters")
         return value.strip() if isinstance(value, str) else value
 
     @model_validator(mode="after")
@@ -90,13 +111,20 @@ class CollectionFailedErrorV1(ContractModel):
     ]
     message: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
+    @field_validator("code", "message")
+    @classmethod
+    def check_error_text(cls, value: str) -> str:
+        if "\x00" in value:
+            raise ValueError("Text must not contain NUL characters")
+        return value
+
 
 class CollectionResultEnvelopeV1(ContractModel):
     message_id: UUID
-    contract_version: Literal[1]
+    contract_version: ContractVersionV1
     job_id: UUID
     job_kind: JobKind
-    completed_at: AwareDatetime
+    completed_at: WireTimestamp
 
 
 class CollectionSucceededV1(CollectionResultEnvelopeV1):

@@ -1,13 +1,13 @@
-import re
 from ipaddress import ip_address
 from urllib.parse import urlsplit, urlunsplit
 
+import idna
+
 MAX_NORMALIZED_URL_BYTES = 2000
-_DNS_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
 
 
 def normalize_product_url(value: str) -> str:
-    """Normalize a URL while retaining the migration's keys for valid hosts."""
+    """Normalize HTTP(S) URLs using IDNA 2008 for DNS hosts."""
     if not value or value != value.strip():
         raise ValueError(
             "URL must be non-empty and must not contain surrounding whitespace"
@@ -37,15 +37,11 @@ def normalize_product_url(value: str) -> str:
         address = ip_address(hostname)
     except ValueError:
         try:
-            normalized_host = hostname.encode("idna").decode("ascii").lower()
-        except UnicodeError as error:
+            normalized_host = idna.encode(hostname, uts46=True, std3_rules=True).decode(
+                "ascii"
+            )
+        except idna.IDNAError as error:
             raise ValueError("URL hostname is invalid") from error
-
-        dns_name = normalized_host.removesuffix(".")
-        if len(dns_name) > 253 or any(
-            not _DNS_LABEL.fullmatch(label) for label in dns_name.split(".")
-        ):
-            raise ValueError("URL hostname is invalid")
     else:
         normalized_host = address.compressed.lower()
         if address.version == 6:

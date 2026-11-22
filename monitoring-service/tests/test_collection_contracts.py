@@ -86,8 +86,12 @@ def test_unavailable_product_can_have_no_price(availability: str) -> None:
     [
         {"status": "OTHER"},
         {"contract_version": 2},
+        {"contract_version": True},
+        {"contract_version": 1.0},
         {"job_kind": "UNKNOWN"},
         {"completed_at": "2026-11-10T17:00:10"},
+        {"completed_at": 1},
+        {"completed_at": "1"},
         {"error": {"code": "BROKEN", "message": "Unexpected error"}},
         {"data": None},
         {"data": product_data(price=None, currency=None)},
@@ -121,3 +125,26 @@ def test_failed_message_requires_nonempty_error_and_null_data() -> None:
     ):
         with pytest.raises(ValidationError):
             result_adapter.validate_python({**message, **changes})
+
+
+@pytest.mark.parametrize(
+    ("status", "field"),
+    [
+        ("SUCCESS", "name"),
+        ("SUCCESS", "article"),
+        ("SUCCESS", "source"),
+        ("FAILED", "code"),
+        ("FAILED", "message"),
+    ],
+)
+def test_reject_nul_in_persisted_text(status: str, field: str) -> None:
+    invalid = {field: "before\x00after"}
+    if status == "SUCCESS":
+        data = product_data(**({"source": "Store"} | invalid))
+        message = dict(result_message(), status="SUCCESS", data=data, error=None)
+    else:
+        error = {"code": "TIMEOUT", "message": "Timed out"} | invalid
+        message = dict(result_message(), status="FAILED", data=None, error=error)
+
+    with pytest.raises(ValidationError, match="NUL"):
+        result_adapter.validate_python(message)
