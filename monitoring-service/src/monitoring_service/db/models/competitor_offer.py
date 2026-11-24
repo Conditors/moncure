@@ -48,7 +48,7 @@ class CompetitorOffer(
     normalized_url: Mapped[str] = mapped_column(Text, nullable=False)
     article: Mapped[str | None] = mapped_column(String(55), nullable=True)
     source: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    current_price: Mapped[Decimal] = mapped_column(Numeric(19, 4), nullable=False)
+    current_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     current_price_version: Mapped[int] = mapped_column(
         BigInteger,
         server_default=text("1"),

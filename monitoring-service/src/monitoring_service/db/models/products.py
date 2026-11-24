@@ -41,7 +41,7 @@ class Product(
     normalized_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     article: Mapped[str | None] = mapped_column(String(55), nullable=True)
     source: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    price: Mapped[Decimal] = mapped_column(Numeric(19, 4), nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     competitor_prices_version: Mapped[int] = mapped_column(
         BigInteger,

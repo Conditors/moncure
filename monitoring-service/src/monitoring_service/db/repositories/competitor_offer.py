@@ -9,6 +9,9 @@ class CompetitorOfferRepository:
     def __init__(self, session: AsyncSession):
         self._session = session
 
+    def add(self, competitor_offer: CompetitorOffer) -> None:
+        self._session.add(competitor_offer)
+
     async def get_by_normalized_url(
         self,
         organization_id: UUID,

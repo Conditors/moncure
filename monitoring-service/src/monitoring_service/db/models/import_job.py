@@ -50,6 +50,7 @@ class ImportJob(
     organization_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
     target_product_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
     created_product_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
+    created_competitor_offer_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
     job_type: Mapped[ImportJobType] = mapped_column(
         SAEnum(
         ImportJobType,
@@ -101,6 +102,12 @@ class ImportJob(
             ("products.organization_id", "products.id"),
             name="fk_import_jobs_created_product",
         ),
+
+        ForeignKeyConstraint(
+            ("organization_id", "target_product_id", "created_competitor_offer_id"),
+            ("competitor_offers.organization_id", "competitor_offers.product_id", "competitor_offers.id"),
+            name="fk_import_jobs_created_competitor_offer"
+        ),
         UniqueConstraint(
             "organization_id",
             "created_product_id",
@@ -137,6 +144,13 @@ class ImportJob(
             )
             """,
             name="ck_import_jobs_created_product",
+        ),
+        CheckConstraint(
+            """
+            (job_type = 'competitor_offer_import' AND status = 'completed')
+            = (created_competitor_offer_id IS NOT NULL)
+            """,
+            name="ck_import_jobs_created_competitor_offer",
         ),
         CheckConstraint(
             "octet_length(normalized_url) <= 2000",
