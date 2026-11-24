@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from monitoring_service.db.repositories.advisory_lock import PostgresAdvisoryLock
+from monitoring_service.db.repositories.competitor_offer import CompetitorOfferRepository
 from monitoring_service.db.repositories.import_job import ImportJobRepository
+from monitoring_service.db.repositories.price_observations import PriceObservationsRepository
 from monitoring_service.db.repositories.product import ProductRepository
 from monitoring_service.db.repositories.rabbitmq_inbox import InboxRepository
 from monitoring_service.db.repositories.rabbitmq_outbox import RabbitMQOutboxRepository
@@ -22,7 +24,9 @@ class UnitOfWork:
         self._session = self._session_factory()
         self.advisory_lock = PostgresAdvisoryLock(self._session)
         self.import_jobs = ImportJobRepository(self._session)
+        self.price_observation = PriceObservationsRepository(self._session)
         self.products = ProductRepository(self._session)
+        self.competitors = CompetitorOfferRepository(self._session)
         self.inbox = InboxRepository(self._session)
         self.outbox = RabbitMQOutboxRepository(self._session)
 

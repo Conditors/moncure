@@ -1,47 +1,21 @@
-from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 from uuid import UUID
 
 from pydantic import (
-    AwareDatetime,
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
     Field,
     StringConstraints,
     field_validator,
     model_validator,
 )
 
+from monitoring_service.contracts.helpers import ContractModel, ContractVersionV1, WireTimestamp
 from monitoring_service.url_normalization import MAX_NORMALIZED_URL_BYTES
 
 JobKind = Literal["IMPORT_JOB", "COLLECTION_JOB"]
 AvailabilityStatus = Literal["AVAILABLE", "OUT_OF_STOCK", "UNAVAILABLE"]
-Price = Annotated[Decimal, Field(gt=0, max_digits=19, decimal_places=4)]
+Price = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=2)]
 Currency = Annotated[str, StringConstraints(pattern=r"^[A-Z]{3}$")]
-
-
-def require_integer_version(value: object) -> object:
-    if type(value) is not int:
-        raise ValueError("contract_version must be a JSON integer")
-    return value
-
-
-def parse_timestamp(value: object) -> datetime:
-    if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
-        return datetime.fromisoformat(value)
-    raise ValueError("timestamp must be an ISO 8601 string")
-
-
-ContractVersionV1 = Annotated[Literal[1], BeforeValidator(require_integer_version)]
-WireTimestamp = Annotated[AwareDatetime, BeforeValidator(parse_timestamp)]
-
-
-class ContractModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
 
 
 class ImportDraftV1(ContractModel):

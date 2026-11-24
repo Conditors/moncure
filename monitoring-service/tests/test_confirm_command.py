@@ -7,7 +7,7 @@ from monitoring_service.services.product_import import ConfirmOwnProductCommand
 
 @pytest.mark.parametrize(
     "price",
-    ["0", "-1", "0.00001", "1000000000000000", "NaN", "Infinity"],
+    ["0", "-1", "0.001", "10000000000000", "NaN", "Infinity"],
 )
 def test_reject_invalid_confirmation_price(price: str) -> None:
     with pytest.raises(ValueError):
@@ -42,8 +42,8 @@ def test_reject_invalid_confirmation_text(changes: dict[str, str]) -> None:
 def test_accept_values_at_database_limits() -> None:
     command = ConfirmOwnProductCommand(
         name="я" * 128,
-        price=Decimal("999999999999999.9999"),
+        price=Decimal("9999999999.99"),
         article="a" * 55,
         source="s" * 50,
     )
-    assert command.price == Decimal("999999999999999.9999")
+    assert command.price == Decimal("9999999999.99")

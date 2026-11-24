@@ -45,7 +45,7 @@ class PriceObservation(
         nullable=True,
     )
     price: Mapped[Decimal | None] = mapped_column(
-        Numeric(19, 4),
+        Numeric(12, 2),
         nullable=True,
     )
     price_version: Mapped[int] = mapped_column(BigInteger, nullable=False)

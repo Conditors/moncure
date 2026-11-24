@@ -1,7 +1,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from monitoring_service.db.models.products import Product
@@ -44,3 +44,17 @@ class ProductRepository:
         )
         product = await self._session.execute(statement)
         return product.scalar_one_or_none()
+
+    async def change_competitor_price_version(self, organization_id: UUID, product_id: UUID) -> int:
+        statement = (
+            update(Product)
+            .where(
+                Product.id == product_id,
+                Product.organization_id == organization_id,
+            )
+            .values(competitor_prices_version = Product.competitor_prices_version + 1)
+            .returning(Product.competitor_prices_version)
+        )
+        result = await self._session.execute(statement)
+        new_version = result.scalar_one()
+        return new_version

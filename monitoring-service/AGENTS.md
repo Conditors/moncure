@@ -14,7 +14,7 @@
 
 ## Инварианты базы данных
 
-- Используйте типизированные модели SQLAlchemy 2.x: `Mapped`, `mapped_column`, явную nullable-семантику, timezone-aware timestamps, UUID, нативные PostgreSQL ENUM и `Numeric(19, 4)` для денег.
+- Используйте типизированные модели SQLAlchemy 2.x: `Mapped`, `mapped_column`, явную nullable-семантику, timezone-aware timestamps, UUID, нативные PostgreSQL ENUM и `Numeric(12, 2)` для денег.
 - Каждая tenant-зависимая связь должна сохранять `organization_id` через существующий паттерн составных внешних ключей.
 - Цена должна быть положительной. В наблюдении цена может быть `NULL` только одновременно с `NULL` в валюте.
 - `Product.competitor_prices_version` начинается с `0`, а `CompetitorOffer.current_price_version` — с `1`. Увеличивайте версии атомарно внутри сервисной транзакции.
