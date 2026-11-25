@@ -1,3 +1,6 @@
 include:
   - path: compose.monitoring.yml
     env_file: ../monitoring-service/.env
+  
+  - path: compose.infra.yml
+    env_file: ../.env
