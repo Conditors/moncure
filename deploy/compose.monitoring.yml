@@ -36,5 +36,21 @@ services:
         condition: service_healthy
     restart: "no"
 
+  monitoring-outbox:
+    <<: *monitoring-service
+    command: ["python", "-m", "monitoring_service.entrypoints.publisher"]
+    environment:
+      MONITORING_POSTGRES_HOST: monitoring-db
+      MONITORING_POSTGRES_PORT: "5432"
+      MONITORING_RABBITMQ_HOST: rabbitmq
+      MONITORING_RABBITMQ_PORT: "5672"
+    
+    depends_on:
+      monitoring-migrate:
+        condition: service_completed_successfully
+      
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   monitoring_postgres_data:

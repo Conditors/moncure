@@ -1,5 +1,3 @@
-"""Monitoring service configuration."""
-
 from functools import lru_cache
 
 from pydantic import Field, SecretStr
@@ -26,6 +24,16 @@ class Settings(BaseSettings):
     db_max_overflow: int = Field(ge=0, le=10)
     db_pool_timeout: int = Field(gt=0, le=60)
 
+
+    rabbitmq_host: str
+    rabbitmq_port: int = Field(gt=0, le=65535)
+    rabbitmq_user: str = Field(min_length=1)
+    rabbitmq_password: SecretStr
+    rabbitmq_vhost: str = Field(min_length=1)
+
+    outbox_batch_size: int = Field(default=10, gt=0)
+    outbox_poll_interval_seconds: float = Field(default=1.0, gt=0)
+
     @property
     def postgres_url(self) -> URL:
         return URL.create(
@@ -36,6 +44,7 @@ class Settings(BaseSettings):
             port=self.postgres_port,
             database=self.postgres_db,
         )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
