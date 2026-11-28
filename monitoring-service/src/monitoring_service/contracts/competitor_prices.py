@@ -13,5 +13,5 @@ class CompetitorPricesUpdatedPayloadV1(ContractModel):
 class CompetitorPricesUpdatedV1(CompetitorPricesUpdatedPayloadV1):
     message_id: UUID
     contract_version: ContractVersionV1
-    occurated_at: WireTimestamp
+    occurred_at: WireTimestamp
 

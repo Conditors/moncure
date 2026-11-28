@@ -8,7 +8,7 @@ async def publish_message(
     body: bytes,
     message_id: str,
     correlation_id: str,
-    headers: HeadersType
+    headers: HeadersType | None = None
 ) -> None:
     message = Message(
         body=body,
